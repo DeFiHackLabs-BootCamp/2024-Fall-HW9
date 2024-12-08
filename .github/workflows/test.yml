@@ -1,0 +1,39 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    steps:
+    # Step 1: Checkout the student's submission
+    - name: Checkout Submission
+      uses: actions/checkout@v4
+
+    # Step 2: Install Foundry Toolchain
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+      with:
+        version: nightly
+
+    # Step 3: Run Foundry Tests
+    - name: Run Foundry Tests for Attack Simulation
+      run: |
+        forge test --match-path test/exploit.t.sol
+      id: run-tests
+
+    # Step 4: Process Test Results
+    - name: Report Autograding Results
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Attack Simulation
+        command: forge test --match-path test/exploit.t.sol
+        timeout: 300 
+        max-score: 100
+
