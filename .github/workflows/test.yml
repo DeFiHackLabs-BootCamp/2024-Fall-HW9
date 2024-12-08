@@ -23,7 +23,7 @@ jobs:
         forge install
       id: test
     
-    - name: BadBot
+    - name: Exploit
       id: problem-1
       uses: classroom-resources/autograding-command-grader@v1
       with:
