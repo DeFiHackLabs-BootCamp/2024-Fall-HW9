@@ -2,20 +2,18 @@ name: Autograding Tests
 'on':
 - push
 - repository_dispatch
-
 permissions:
-  contents: read
-  actions: read
   checks: write
-
+  actions: read
+  contents: read
 jobs:
   run-autograding-tests:
     runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
     steps:
-    - name: Checkout Submission
+    - name: Code Verification
       uses: actions/checkout@v4
-
-    - name: Install Foundry
+    - name: Foundry Installation
       uses: foundry-rs/foundry-toolchain@v1
       with:
         version: nightly
@@ -24,17 +22,19 @@ jobs:
         cd hw
         forge install
       id: test
-
-    - name: Run Foundry Tests for Attack Simulation
-      run: |
-        forge test --match-path test/exploit.t.sol
-      id: run-tests
-
-    - name: Report Autograding Results
+    
+    - name: BadBot
+      id: problem-1
       uses: classroom-resources/autograding-command-grader@v1
       with:
-        test-name: Attack Simulation
-        command: forge test --match-path test/exploit.t.sol
-        timeout: 300 
+        test-name: Exploit
+        command: cd hw && forge test --mc ExploitTest --mt test_liquidateHealthyTrove
+        timeout: 300
         max-score: 100
 
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        PROBLEM-1_RESULTS: "${{steps.problem-1.outputs.result}}"
+      with:
+        runners: problem-1
